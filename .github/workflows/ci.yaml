@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lab-1/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lab-1/**'
+
+jobs:
+  build-and-security:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: lab-1 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('lab-1/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build with Maven
+        run: mvn clean install -DskipTests
+
+      - name: Run SpotBugs (SAST)
+        run: mvn spotbugs:check
+
+      - name: Run SpotBugs (SAST Full)
+        run: mvn spotbugs:spotbugs
+        continue-on-error: true
+        
+      - name: Upload SpotBugs Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spotbugs-report
+          path: |
+            lab-1/target/spotbugs.html
+            lab-1/target/spotbugsXml.xml
+          
+      - name: Run OWASP Dependency Check
+        env:
+          NVD_API_KEY: ${{ secrets.API_KEY }}
+        run: mvn org.owasp:dependency-check-maven:check -DnvdApiKey=${{ secrets.API_KEY }}
+        continue-on-error: true
+        
+      - name: Upload OWASP Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owasp-dependency-check-reports
+          path: |
+            lab-1/target/dependency-check-report.html
+            lab-1/target/dependency-check-report.json
+            lab-1/target/dependency-check-report.xml
+            lab-1/target/dependency-check-report.csv
