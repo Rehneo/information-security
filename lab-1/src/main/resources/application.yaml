@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: information-security-lab-1
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:information-security-lab-1-repository}
+    username: ${DATABASE_USER:s368557}
+    password: ${DATABASE_PASSWORD:s368557}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET:5e1585e6cf95c29e289e5d3c14891cd9318174224f3587c77e2871a25b2b5102}
+  accessExpiration: ${JWT_ACCESS_EXPIRATION:3600000}
+
+server:
+  port: ${SERVER_PORT:8080}
