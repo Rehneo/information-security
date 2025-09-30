@@ -1,7 +1,5 @@
 package com.rehneo.informationsecurity.lab1.error;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -9,26 +7,12 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({AuthenticationException.class})
     public ResponseEntity<ErrorResponse> authenticationException() {
         final ErrorResponse response = new ErrorResponse("Invalid credentials");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-    }
-
-    @ExceptionHandler({ConstraintViolationException.class})
-    public ResponseEntity<DetailedErrorResponse> constraintViolation(ConstraintViolationException ex) {
-        final List<String> errors = new ArrayList<>();
-        for (final ConstraintViolation<?> violation : ex.getConstraintViolations()) {
-            errors.add(violation.getPropertyPath() + ": " + violation.getMessage());
-        }
-
-        final DetailedErrorResponse response = new DetailedErrorResponse("Constraint violation", errors);
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
     }
 
     @ExceptionHandler({ConflictException.class})
